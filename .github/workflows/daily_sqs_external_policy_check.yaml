@@ -1,5 +1,5 @@
 # github workflow that fetches the latest version of the docker repository and runs the tests every day
-name: Docker Image CI
+name: Daily SQS External Policy Check
 on:
   schedule:
     - cron: '0 0 * * *'
@@ -7,8 +7,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     
-  
-
 jobs:
     fetch-and-run:
       runs-on: ubuntu-latest
@@ -23,7 +21,7 @@ jobs:
               password: ${{ secrets.DOCKERHUB_TOKEN }}
 
           - name: Pull the latest version of the image
-            run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sqs_policy_handler:lastest
+            run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sqs_policy_handler:latest
 
           - name: Run the script
             run: |
@@ -31,5 +29,5 @@ jobs:
               docker run
                 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
                 -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-               ${{ secrets.DOCKERHUB_USERNAME }}/sqs_policy_handler:lastest \
+               ${{ secrets.DOCKERHUB_USERNAME }}/sqs_policy_handler:latest \
                 --bucket ${{ secrets.BUCKET_NAME }} 
