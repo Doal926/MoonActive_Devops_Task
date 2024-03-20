@@ -6,4 +6,8 @@ RUN pip install boto3
 
 COPY sqs_policy_handler.py /usr/app/
 
-CMD python sqs_policy_handler.py
+# Security: add and use non-root user
+RUN useradd -m appuser
+USER appuser
+
+ENTRYPOINT [ "python", "sqs_policy_handler.py" ]

@@ -1,15 +1,23 @@
 import argparse
 import json
-import os
+import logging
+from datetime import datetime
 from typing import Any
 
 import boto3
 
+logger = logging.getLogger()
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
+
+LOG_FILE_PATH = "/tmp/log.txt"
+
 
 # function that uploads log.txt to s3 bucket
-def upload_to_s3(bucket_name: str):
+def upload_to_s3(file_path: str, bucket_name: str):
+    logger.info(f"Uploading {file_path} to {bucket_name}")
     s3 = boto3.client("s3")
-    s3.upload_file("log.txt", bucket_name, "log.txt")
+    # upload as log-[isotimestamp].txt to keep old logs
+    s3.upload_file(file_path, bucket_name, f"log-{datetime.now().isoformat()}.txt")
 
 
 # function that runs through all sqs queues in all regions and get their resource policy
@@ -38,18 +46,15 @@ def fix_sqs_policy(aws_account_id: str, queue_policy: dict[str, Any]):
 
 
 # Function that changes the policy of a queue from external to internal
-def change_sqs_policy(region, queue, queue_policy):
+def change_sqs_policy(region: str, queue: str, queue_policy):
+    logger.info(f"Changing policy for queue {queue} to internal")
     queue_url = queue
     client = boto3.client("sqs", region_name=region)
 
     fix_sqs_policy(get_current_aws_account_id(), queue_policy)
 
     queue_policy = json.dumps(queue_policy)
-    response = client.set_queue_attributes(
-        QueueUrl=queue_url, Attributes={"Policy": queue_policy}
-    )
-    print(response)
-    # return response
+    client.set_queue_attributes(QueueUrl=queue_url, Attributes={"Policy": queue_policy})
 
 
 def get_current_aws_account_id():
@@ -69,7 +74,9 @@ def parse_arn(arn: str) -> dict[str, str]:
     }
 
 
-def is_principal_external(current_account_id: str, principal: dict[str, Any] | str) -> bool:
+def is_principal_external(
+    current_account_id: str, principal: dict[str, Any] | str
+) -> bool:
     # check if the principal is an external account
     # according to: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
     # according to the documentation above principal can be written as follows: "Principal": { "AWS": "123456789012" }
@@ -82,7 +89,10 @@ def is_principal_external(current_account_id: str, principal: dict[str, Any] | s
         if "AWS" in principal:
             aws_principal = principal["AWS"]
             if isinstance(aws_principal, str):
-                if aws_principal == "*" or parse_arn(aws_principal)["account_id"] != current_account_id:
+                if (
+                    aws_principal == "*"
+                    or parse_arn(aws_principal)["account_id"] != current_account_id
+                ):
                     return True
             elif isinstance(aws_principal, list):
                 for p in aws_principal:
@@ -112,21 +122,31 @@ def sqs_handler():
     regions = [region["RegionName"] for region in client.describe_regions()["Regions"]]
 
     # get all sqs queues in all regions
+
+    exposed_queues = []
+
     for region in regions:
+        logger.info(f"Checking region {region}")
         if region != "eu-central-1":
             continue
         sqs_policies = get_sqs_policy(region)
         for queue, sqs_policy in sqs_policies.items():
+            logger.info(f"Checking queue: {queue}")
             is_external_accessible_queue = is_policy_allow_external(
                 current_aws_account_id, sqs_policy
             )
             if is_external_accessible_queue:
-                with open("log.txt", "a") as f:
-                    f.write(f"{queue.split('/')[-1]}\n")
+                logger.info(f"Queue {queue} is exposed")
+                exposed_queues.append(queue)
 
                 if args.change_policy:
                     change_sqs_policy(region, queue, sqs_policy)
-    upload_to_s3(args.bucket)
+
+    # write the exposed queues to a file
+    with open(LOG_FILE_PATH, "w") as f:
+        f.write("\n".join(exposed_queues))
+
+    upload_to_s3(LOG_FILE_PATH, args.bucket)
 
 
 def parse_args():
@@ -140,10 +160,3 @@ def parse_args():
 
 if __name__ == "__main__":
     sqs_handler()
-    # print log.txt
-    if os.path.exists("log.txt"):
-        with open("log.txt", "r") as f:
-            print(f.read())
-    # delete log.txt
-    if os.path.exists("log.txt"):
-        os.remove("log.txt")
