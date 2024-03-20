@@ -41,4 +41,4 @@ jobs:
                 -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
                ${{ secrets.DOCKERHUB_USERNAME }}/sqs_policy_handler:latest \
                 --bucket ${{ github.event.inputs.bucket_name }} \
-                --cp ${{ github.event.inputs.change_policy}}
+                --change-policy ${{ github.event.inputs.change_policy}}
