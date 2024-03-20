@@ -6,6 +6,15 @@ on:
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      bucket_name:
+        description: 'Bucket name'
+        required: true
+        default: 'moonactive-task-bucket'
+      change_policy:
+        description: 'Change policy'
+        required: true
+        default: 'false'
     
 jobs:
     fetch-and-run:
@@ -31,4 +40,5 @@ jobs:
                 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
                 -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
                ${{ secrets.DOCKERHUB_USERNAME }}/sqs_policy_handler:latest \
-                --bucket ${{ secrets.BUCKET_NAME }} 
+                --bucket ${{ github.event.inputs.bucket_name }} \ 
+                --cp ${{ github.event.inputs.change_policy}}
