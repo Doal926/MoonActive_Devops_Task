@@ -142,7 +142,7 @@ def sqs_handler():
                 logger.info(f"Queue {queue} is exposed")
                 exposed_queues.append(queue.split("/")[-1])
 
-                if args.change_policy:
+                if not args.log:
                     change_sqs_policy(region, queue, sqs_policy)
 
     # write the exposed queues to a file
@@ -155,9 +155,7 @@ def sqs_handler():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--bucket", help="Bucket Name", required=True)
-    parser.add_argument(
-        "-cp", "--change-policy", action="store_true", help="Change Policy"
-    )
+    parser.add_argument("-l", "--log", action="store_true", help="Log Mode")
     return parser.parse_args()
 
 
