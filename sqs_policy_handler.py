@@ -12,16 +12,16 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 LOG_FILE_PATH = "/tmp/log.txt"
 
 
-# function that uploads log.txt to s3 bucket
 def upload_to_s3(file_path: str, bucket_name: str):
+    # function that uploads log.txt to s3 bucket
     logger.info(f"Uploading {file_path} to {bucket_name}")
     s3 = boto3.client("s3")
     # upload as log-[isotimestamp].txt to keep old logs
     s3.upload_file(file_path, bucket_name, f"log-{datetime.now().isoformat()}.txt")
 
 
-# function that runs through all sqs queues in all regions and get their resource policy
 def get_sqs_policy(region: str) -> dict[str, dict[str, Any]]:
+    # get all sqs queues policies in the region
     client = boto3.client("sqs", region_name=region)
     sqs_policies = {}
 
@@ -45,8 +45,8 @@ def fix_sqs_policy(aws_account_id: str, queue_policy: dict[str, Any]):
             statement["Principal"]["AWS"] = f"arn:aws:iam::{aws_account_id}:root"
 
 
-# Function that changes the policy of a queue from external to internal
 def change_sqs_policy(region: str, queue: str, queue_policy):
+    # Function that changes the policy of a queue from external to internal
     logger.info(f"Changing policy for queue {queue} to internal")
     queue_url = queue
     client = boto3.client("sqs", region_name=region)
@@ -57,7 +57,7 @@ def change_sqs_policy(region: str, queue: str, queue_policy):
     client.set_queue_attributes(QueueUrl=queue_url, Attributes={"Policy": queue_policy})
 
 
-def get_current_aws_account_id():
+def get_current_aws_account_id() -> str:
     client = boto3.client("sts")
     response = client.get_caller_identity()
     return response["Account"]
@@ -69,7 +69,7 @@ def parse_arn(arn: str) -> dict[str, str]:
     except Exception:
         # When to principal is from the following format: "Principal": { "AWS": "123456789012" }
         # instead of "Principal": { "AWS": "arn:aws:iam::123456789012:root" }
-        return arn
+        return {"account_id": arn}
     return {
         "partition": arn[1],
         "service": arn[2],
@@ -84,8 +84,7 @@ def is_principal_external(
 ) -> bool:
     # check if the principal is an external account
     # according to: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
-    # according to the documentation above principal can be written as follows: "Principal": { "AWS": "123456789012" }
-    # when it is done aws changes it to "Principal": { "AWS": "arn:aws:iam::123456789012:root" }
+
     if isinstance(principal, str):
         if principal == "*" or parse_arn(principal)["account_id"] != current_account_id:
             return True
@@ -127,9 +126,7 @@ def sqs_handler():
     regions = [region["RegionName"] for region in client.describe_regions()["Regions"]]
 
     # get all sqs queues in all regions
-
     exposed_queues = []
-
     for region in regions:
         logger.info(f"Checking region {region}")
         sqs_policies = get_sqs_policy(region)
@@ -145,7 +142,7 @@ def sqs_handler():
                 if not args.log:
                     change_sqs_policy(region, queue, sqs_policy)
 
-    # write the exposed queues to a file
+    # write the exposed queues names to a file
     with open(LOG_FILE_PATH, "w") as f:
         f.write("\n".join(exposed_queues))
 

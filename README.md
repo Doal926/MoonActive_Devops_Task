@@ -2,11 +2,14 @@
 
 ## Table of Contents
 - [Description](#description)
+  - [Assignment A](#assingment-a)
+  - [Assignment B](#assignment-b)
 - [Getting Started](#getting-started)
-- [Usage](#usage)
+  - [Assignment A](#assignment-a)
+  - [Assignment B](#assignment-b-1)
 
 ## Description
-Dor Alon's DevSecOps Home Exercise
+Dor Alon's DevSecOps Home Exercise.
 
 ### Assingment A:
 The code will scan an AWS account for externally exposed SQS queues and will alter their IAM policy to internal.
@@ -21,7 +24,7 @@ Assignment A files:
 - [.github/workflows/daily_sqs_external_policy_check.yaml](./.github/workflows/daily_sqs_external_policy_check.yaml)
 
 ### Assignment B:
-In this assignment, the code will run on your AWS instance. This app will receive a GET request and return your instance metadata
+The code will run on your AWS instance. This app will receive a GET request and return your instance metadata.
 [Assignment B files.](Assignment_B/)
 
 ## Getting Started
@@ -37,10 +40,10 @@ In this assignment, the code will run on your AWS instance. This app will receiv
 
 #### Testing
 There are two ways to run the code and check for external policy in all SQS queues in your account:
-- Daily scan: This scan will trigger every day at 10 am. This workflow will scan and upload to S3 bucket and also alter the IAM policies of the externally exposed SQS queues
+- Daily scan: This scan will trigger every day at 10 am. This workflow will scan and upload the externally exposed SQS queue names to a S3 bucket and also alter the IAM policies of those queues
 - Manual scan: For this scan to work, you need to go to your GitHub Actions -> Daily SQS External Policy Check -> Run Workflow
   ![image](https://github.com/Doal926/MoonActive_Devops_Task/assets/134269134/eb7ed7fd-4177-4c60-ae66-ac0d1f6f9651)
-  When you trigger the manual scan, you can put a different bucket than the one you put in the secret, and you can specify to run in Log Mode(will not change the IAM policeis) with one of these flags: `-l` or `--log`
+  When you trigger the manual scan, you can put a different bucket than the one you put in the secret, and you can specify to run in Log Mode(will not change the IAM policies) with one of these flags: `-l` or `--log`
 
 
 ### Assignment B:
@@ -56,5 +59,4 @@ For this code to work, you need to send a GET request with the VM's IP and the c
 ```bash
 curl -X GET http://[vm-ip]:5000/metadata
 ```
-# Assignment B:
 
