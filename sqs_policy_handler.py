@@ -27,7 +27,7 @@ def get_sqs_policy(region: str) -> dict[str, dict[str, Any]]:
 
     # if we have more than 1000 queues we need to use paginator
     for page in client.get_paginator("list_queues").paginate():
-        for queue in page["QueueUrls"]:
+        for queue in page.get("QueueUrls", []):
             client = boto3.client("sqs", region_name=region)
             response = client.get_queue_attributes(
                 QueueUrl=queue, AttributeNames=["QueueArn", "Policy"]
