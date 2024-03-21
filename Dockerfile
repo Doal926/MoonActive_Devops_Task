@@ -2,8 +2,7 @@ FROM python:3.11.7-slim
 
 WORKDIR /usr/app
 
-RUN apt update && apt upgrade -y
-RUN pip install boto3
+RUN pip install boto3 && apt update && apt upgrade -y
 
 COPY sqs_policy_handler.py /usr/app/
 
