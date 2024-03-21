@@ -9,38 +9,52 @@
 Dor Alon's DevSecOps Home Exercise
 
 ### Assingment A:
-In this assignment, the code will scan your AWS account for external SQS policies and change them to internal policies instead. This assignment also includes two workflows: one that builds the code into a container and pushes this container to a DockerHub repository and the other workflow that scans the account once every day and also can be triggered manually
+The code will scan an AWS account for externally exposed SQS queues and will alter their IAM policy to internal.
+This assignment includes two workflows:
+- A workflow that builds the code into a container and pushes it to DockerHub
+- A workflow that scans the account once a day. This workflow can be triggered manually
+  
 Assignment A files:
-- sqs_policy_handler.py
-- Dockerfile
-- .github/workflows/build_and_push.yaml
-- .github/workflows/daily_sqs_external_policy_check.yaml
+- [sqs_policy_handler.py](./sqs_policy_handler.py)
+- [Dockerfile](./Dockerfile)
+- [.github/workflows/build_and_push.yaml](./.github/workflows/build_and_push.yaml)
+- [.github/workflows/daily_sqs_external_policy_check.yaml](./.github/workflows/daily_sqs_external_policy_check.yaml)
 
 ### Assignment B:
 In this assignment, the code will run on your AWS instance. This app will receive a GET request and return your instance metadata
-Assignment B file:
-- Assignment_B/instance_metadata.py
+[Assignment B files.](Assignment_B/)
 
 ## Getting Started
 ### Assignment A:
-For this assignment to work, you need to configure the following repository secrets in your cloned repo:
-- DOCKERHUB_USERNAME - your docker hub username
-- DOCKERHUB_TOKEN - your docker hub token
-- AWS_ACCESS_KEY_ID - your AWS account access key id
-- AWS_SECRET_ACCESS_KEY -  your AWS account secret access key
-- BUCKET_NAME - your s3 bucket name
+#### Setup:
+- Clone this repo.
+- Configure the following repository secrets:
+  - DOCKERHUB_USERNAME - your docker hub username
+  - DOCKERHUB_TOKEN - your docker hub token
+  - AWS_ACCESS_KEY_ID - your AWS account access key id
+  - AWS_SECRET_ACCESS_KEY -  your AWS account secret access key
+  - BUCKET_NAME - your s3 bucket name
 
-### Assignment B:
-For this assignment to work, you need to run the code on your VM
-
-## Usage
-# Assignment A:
+#### Testing
 There are two ways to run the code and check for external policy in all SQS queues in your account:
-- Daily scan: This scan will trigger every day at 10 am. This workflow will scan and upload but will not change the policy
+- Daily scan: This scan will trigger every day at 10 am. This workflow will scan and upload to S3 bucket and also alter the IAM policies of the externally exposed SQS queues
 - Manual scan: For this scan to work, you need to go to your GitHub Actions -> Daily SQS External Policy Check -> Run Workflow
   ![image](https://github.com/Doal926/MoonActive_Devops_Task/assets/134269134/eb7ed7fd-4177-4c60-ae66-ac0d1f6f9651)
-  When you trigger the manual scan, you can put a different bucket than the one you put in the secret, and you can specify to change policy with one of these flags: `-cp` or `--change-    policy`
+  When you trigger the manual scan, you can put a different bucket than the one you put in the secret, and you can specify to run in Log Mode(will not change the IAM policeis) with one of these flags: `-l` or `--log`
 
+
+### Assignment B:
+#### Setup
+```bash
+cd 'Assignment_B/'
+pip install -r requirements.txt
+python3 instance_metadata.py
+```
+
+#### Testing
+For this code to work, you need to send a GET request with the VM's IP and the correct Port with the suffix - `/metadata`. For example:
+```bash
+curl -X GET http://[vm-ip]:5000/metadata
+```
 # Assignment B:
-For this code to work, you need to send a GET request with the VM's IP and the correct Port with the suffix - `/metadata`. For example: `curl -X GET http://127.0.0.0:5000/metadata`
 
