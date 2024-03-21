@@ -6,9 +6,9 @@
 - [Usage](#usage)
 
 ## Description
-This is Dor Alon DevSecOps Home Exercise
+Dor Alon's DevSecOps Home Exercise
 
-# Assingment A:
+### Assingment A:
 In this assignment, the code will scan your AWS account for external SQS policies and change them to internal policies instead. This assignment also includes two workflows: one that builds the code into a container and pushes this container to a DockerHub repository and the other workflow that scans the account once every day and also can be triggered manually
 Assignment A files:
 - sqs_policy_handler.py
@@ -16,13 +16,13 @@ Assignment A files:
 - .github/workflows/build_and_push.yaml
 - .github/workflows/daily_sqs_external_policy_check.yaml
 
-# Assignment B:
+### Assignment B:
 In this assignment, the code will run on your AWS instance. This app will receive a GET request and return your instance metadata
 Assignment B file:
 - Assignment_B/instance_metadata.py
 
 ## Getting Started
-# Assignment A:
+### Assignment A:
 For this assignment to work, you need to configure the following repository secrets in your cloned repo:
 - DOCKERHUB_USERNAME - your docker hub username
 - DOCKERHUB_TOKEN - your docker hub token
@@ -30,7 +30,7 @@ For this assignment to work, you need to configure the following repository secr
 - AWS_SECRET_ACCESS_KEY -  your AWS account secret access key
 - BUCKET_NAME - your s3 bucket name
 
-# Assignment B:
+### Assignment B:
 For this assignment to work, you need to run the code on your VM
 
 ## Usage
