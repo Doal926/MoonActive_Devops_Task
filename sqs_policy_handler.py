@@ -64,7 +64,12 @@ def get_current_aws_account_id():
 
 
 def parse_arn(arn: str) -> dict[str, str]:
-    arn = arn.split(":")
+    try:
+        arn = arn.split(":")
+    except Exception:
+        # When to principal is from the following format: "Principal": { "AWS": "123456789012" }
+        # instead of "Principal": { "AWS": "arn:aws:iam::123456789012:root" }
+        return arn
     return {
         "partition": arn[1],
         "service": arn[2],
@@ -127,8 +132,6 @@ def sqs_handler():
 
     for region in regions:
         logger.info(f"Checking region {region}")
-        if region != "eu-central-1":
-            continue
         sqs_policies = get_sqs_policy(region)
         for queue, sqs_policy in sqs_policies.items():
             logger.info(f"Checking queue: {queue}")
@@ -137,7 +140,7 @@ def sqs_handler():
             )
             if is_external_accessible_queue:
                 logger.info(f"Queue {queue} is exposed")
-                exposed_queues.append(queue)
+                exposed_queues.append(queue.split("/")[-1])
 
                 if args.change_policy:
                     change_sqs_policy(region, queue, sqs_policy)
