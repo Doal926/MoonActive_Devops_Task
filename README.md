@@ -38,7 +38,7 @@ For this assignment to work, you need to run the code on your VM
 There are two ways to run the code and check for external policy in all SQS queues in your account:
 - Daily scan: This scan will trigger every day at 10 am. This workflow will scan and upload but will not change the policy
 - Manual scan: For this scan to work, you need to go to your GitHub Actions -> Daily SQS External Policy Check -> Run Workflow
-  ![image](https://github.com/Doal926/MoonActive_Devops_Task/assets/134269134/f57fd59d-21f1-4a6d-8295-12ad91566bfc)
+  ![image](https://github.com/Doal926/MoonActive_Devops_Task/assets/134269134/eb7ed7fd-4177-4c60-ae66-ac0d1f6f9651)
   When you trigger the manual scan, you can put a different bucket than the one you put in the secret, and you can specify to change policy with one of these flags: `-cp` or `--change-    policy`
 
 # Assignment B:
